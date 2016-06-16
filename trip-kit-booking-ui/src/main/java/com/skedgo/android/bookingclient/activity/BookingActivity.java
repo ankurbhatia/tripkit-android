@@ -1,7 +1,9 @@
 package com.skedgo.android.bookingclient.activity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
@@ -13,8 +15,6 @@ import com.skedgo.android.bookingclient.fragment.BookingFragment;
 import com.skedgo.android.bookingclient.module.BookingClientComponent;
 import com.skedgo.android.bookingclient.module.BookingClientModule;
 import com.skedgo.android.bookingclient.module.DaggerBookingClientComponent;
-import com.skedgo.android.bookingclient.viewmodel.CollectBookingFeedbackCommand;
-import com.skedgo.android.bookingclient.viewmodel.Command;
 import com.skedgo.android.tripkit.booking.BookingForm;
 import com.skedgo.android.tripkit.booking.viewmodel.BookingViewModel;
 import com.skedgo.android.tripkit.booking.viewmodel.ParamImpl;
@@ -23,6 +23,8 @@ import com.squareup.otto.Subscribe;
 
 import javax.inject.Inject;
 
+import rx.Completable;
+import rx.functions.Func1;
 import skedgo.anim.AnimatedTransitionActivity;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -41,18 +43,9 @@ public class BookingActivity extends AnimatedTransitionActivity implements Fragm
 
   @Inject Bus bus;
 
-  @Override protected void attachBaseContext(Context newBase) {
-    super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
-  }
-
   @Override public void onStart() {
     super.onStart();
     bus.register(this);
-  }
-
-  @Override protected void onStop() {
-    super.onStop();
-    bus.unregister(this);
   }
 
   @Override
@@ -120,7 +113,18 @@ public class BookingActivity extends AnimatedTransitionActivity implements Fragm
     }
   }
 
-  public CollectBookingFeedbackCommand reportProblemHandler() { return null; }
+  public @Nullable Func1<Activity, Completable> reportProblem() {
+    return null;
+  }
+
+  @Override protected void attachBaseContext(Context newBase) {
+    super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+  }
+
+  @Override protected void onStop() {
+    super.onStop();
+    bus.unregister(this);
+  }
 
   private void setupActionBar() {
     ActionBar actionBar = getSupportActionBar();

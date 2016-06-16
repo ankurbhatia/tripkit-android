@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,9 +19,8 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.skedgo.android.bookingclient.R;
 import com.skedgo.android.bookingclient.activity.BookingActivity;
+import com.skedgo.android.bookingclient.util.ErrorHandlers;
 import com.skedgo.android.bookingclient.viewmodel.BookingErrorViewModel;
-import com.skedgo.android.bookingclient.viewmodel.CollectBookingFeedbackCommand;
-import com.skedgo.android.bookingclient.viewmodel.Command;
 import com.skedgo.android.bookingclient.viewmodel.ExtendedBookingViewModel;
 import com.skedgo.android.common.util.LogUtils;
 import com.skedgo.android.tripkit.booking.BookingForm;
@@ -28,15 +28,15 @@ import com.skedgo.android.tripkit.booking.LinkFormField;
 import com.skedgo.android.tripkit.booking.viewmodel.BookingViewModel;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
-import com.uservoice.uservoicesdk.Config;
-import com.uservoice.uservoicesdk.UserVoice;
 
 import javax.inject.Inject;
 
 import dagger.Lazy;
+import rx.Completable;
 import rx.android.view.ViewActions;
 import rx.functions.Action1;
 import rx.functions.Actions;
+import rx.functions.Func1;
 import skedgo.common.view.ButterKnifeFragment;
 
 public class BookingFragment extends ButterKnifeFragment implements View.OnClickListener {
@@ -91,21 +91,15 @@ public class BookingFragment extends ButterKnifeFragment implements View.OnClick
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     if (item.getItemId() == R.id.reportProblemMenuItem) {
-
-      if (getActivity() instanceof BookingActivity) {
-        BookingActivity a = (BookingActivity)getActivity();
-        CollectBookingFeedbackCommand handler = a.reportProblemHandler();
-        if (handler != null) {
-
-          viewModel.reportProblem(handler, new CollectBookingFeedbackCommand.Param(getActivity()))
+      final FragmentActivity activity = getActivity();
+      if (activity instanceof BookingActivity) {
+        final BookingActivity a = (BookingActivity) activity;
+        final Func1<Activity, Completable> command = a.reportProblem();
+        if (command != null) {
+          command.call(a)
+              .toObservable()
               .takeUntil(lifecycle().onDestroy())
-              .subscribe(new Action1<Config>() {
-                @Override
-                public void call(Config config) {
-                  UserVoice.init(config, getActivity());
-                  UserVoice.launchContactUs(getActivity());
-                }
-              }, ErrorActions.showUnexpectedError(getActivity()));
+              .subscribe(Actions.empty(), ErrorHandlers.logError());
         }
       }
       return true;
@@ -150,7 +144,7 @@ public class BookingFragment extends ButterKnifeFragment implements View.OnClick
           }
         });
 
-    if (param != null){
+    if (param != null) {
       hudTextView.setText(param.getHudText());
     }
 
@@ -301,7 +295,6 @@ public class BookingFragment extends ButterKnifeFragment implements View.OnClick
 
   private void showAuthentication(@NonNull final BookingForm form) {
 
-
     viewModel.needsAuthentication(form).subscribe(new Action1<Boolean>() {
       @Override public void call(Boolean needAuth) {
         if (needAuth) {
@@ -326,8 +319,6 @@ public class BookingFragment extends ButterKnifeFragment implements View.OnClick
         getActivity().finish();
       }
     });
-
-
 
   }
 
