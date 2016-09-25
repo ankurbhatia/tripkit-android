@@ -37,6 +37,7 @@ dependencies {
 
   compile project(':trip-kit')
   compile project(':trip-kit-booking')
+  compile project(':trip-kit-account')
 
   compile('com.github.skedgo:bux:v1.0') { exclude module: 'rxjava' }
   compile 'com.github.skedgo:common-views:v1.0'

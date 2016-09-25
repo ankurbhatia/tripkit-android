@@ -8,5 +8,5 @@ import rx.Observable;
 
 public interface OAuth2CallbackHandler {
   Observable<BookingForm> handleOAuthURL(BookingForm bookingForm, Uri uri, String callback);
-  Observable<BookingForm> handleRetryURL(BookingForm bookingForm, Uri uri);
+  Observable<BookingForm> handleRetryURL(BookingForm bookingForm);
 }

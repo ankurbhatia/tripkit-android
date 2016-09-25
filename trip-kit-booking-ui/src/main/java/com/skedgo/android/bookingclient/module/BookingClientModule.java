@@ -12,7 +12,9 @@ import com.skedgo.android.bookingclient.R;
 import com.skedgo.android.bookingclient.viewmodel.BookingErrorViewModel;
 import com.skedgo.android.common.util.Gsons;
 import com.skedgo.android.common.util.MainThreadBus;
+import com.skedgo.android.tripkit.Configs;
 import com.skedgo.android.tripkit.TripKit;
+import com.skedgo.android.tripkit.account.AccountService;
 import com.skedgo.android.tripkit.booking.BookingService;
 import com.skedgo.android.tripkit.booking.ExternalOAuthService;
 import com.squareup.otto.Bus;
@@ -46,6 +48,10 @@ public class BookingClientModule {
     return Gsons.createForLowercaseEnum();
   }
 
+  @Provides Configs provideConfigs() {
+    return TripKit.singleton().configs();
+  }
+
   @Provides @Singleton Bus provideBus() {
     return new MainThreadBus(new Action1<Throwable>() {
       @Override public void call(Throwable error) {
@@ -68,7 +74,10 @@ public class BookingClientModule {
         .build();
   }
 
-  @Provides OAuth2CallbackHandler getOAuth2CallbackHandler(ExternalOAuthService externalOAuthService, BookingService bookingService) {
-    return new OAuth2CallbackHandlerImpl(externalOAuthService, bookingService);
+  @Provides OAuth2CallbackHandler getOAuth2CallbackHandler(ExternalOAuthService externalOAuthService,
+                                                           BookingService bookingService,
+                                                           AccountService accountService) {
+    return new OAuth2CallbackHandlerImpl(appContext, externalOAuthService, bookingService,
+                                         accountService, TripKit.singleton().configs().userTokenProvider());
   }
 }
