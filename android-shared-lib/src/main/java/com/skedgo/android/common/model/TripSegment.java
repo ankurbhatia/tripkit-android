@@ -151,6 +151,7 @@ public class TripSegment implements Parcelable, IRealTimeElement, ITimeRange {
   private ArrayList<Shape> mShapes;
   @SerializedName("realtimeVehicle")
   private RealTimeVehicle mRealTimeVehicle;
+  @SerializedName("wheelchairAccessible")
   private boolean wheelchairAccessible;
 
   /**

@@ -17,7 +17,7 @@ public class Shape implements Parcelable {
       shape.stops = in.readArrayList(ServiceStop.class.getClassLoader());
       shape.encodedWaypoints = in.readString();
       shape.serviceColor = in.readParcelable(ServiceColor.class.getClassLoader());
-
+      shape.wheelchairAccessible = in.readByte() == 1;
       return shape;
     }
 
@@ -39,6 +39,8 @@ public class Shape implements Parcelable {
   private ServiceColor serviceColor;
   @SerializedName("encodedWaypoints")
   private String encodedWaypoints;
+  @SerializedName("wheelchairAccessible")
+  private boolean wheelchairAccessible;
 
   public long getId() {
     return id;
@@ -100,5 +102,14 @@ public class Shape implements Parcelable {
     out.writeList(stops);
     out.writeString(encodedWaypoints);
     out.writeParcelable(serviceColor, 0);
+    out.writeByte((byte) (wheelchairAccessible ? 1 : 0));
+  }
+
+  public boolean isWheelchairAccessible() {
+    return wheelchairAccessible;
+  }
+
+  public void setWheelchairAccessible(boolean wheelchairAccessible) {
+    this.wheelchairAccessible = wheelchairAccessible;
   }
 }
