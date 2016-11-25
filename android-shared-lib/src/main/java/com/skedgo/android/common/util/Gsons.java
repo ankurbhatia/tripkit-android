@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.skedgo.android.common.model.GsonAdaptersBikePod;
 import com.skedgo.android.common.model.GsonAdaptersBooking;
 import com.skedgo.android.common.model.GsonAdaptersRealtimeAlert;
 import com.skedgo.android.common.model.Region;
@@ -17,6 +18,7 @@ public final class Gsons {
         .registerTypeAdapterFactory(new LowercaseEnumTypeAdapterFactory())
         .registerTypeAdapterFactory(new GsonAdaptersBooking())
         .registerTypeAdapterFactory(new GsonAdaptersRealtimeAlert())
+        .registerTypeAdapterFactory(new GsonAdaptersBikePod())
         .create();
   }
 
