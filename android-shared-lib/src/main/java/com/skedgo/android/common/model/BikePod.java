@@ -9,7 +9,7 @@ import org.immutables.value.Value;
 @Gson.TypeAdapters
 @JsonAdapter(GsonAdaptersBikePod.class)
 public abstract class BikePod {
-  abstract int available();
-  abstract int capacity();
-  abstract long lastUpdated();
+  public abstract int available();
+  public abstract int capacity();
+  public abstract long lastUpdated();
 }
