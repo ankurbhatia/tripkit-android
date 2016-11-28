@@ -54,6 +54,11 @@ public class Location implements Parcelable, ILatLon {
   public static final int TYPE_HOME = 7; //so we never delete this location
 
   /**
+   * Location is a bike pod stop
+   */
+  public static final int TYPE_BIKE_POD = 8; //so we never delete this location
+
+  /**
    * What3Words type
    */
   public static final int TYPE_W3W = 9;
