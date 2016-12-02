@@ -27,14 +27,16 @@ import static rx.android.schedulers.AndroidSchedulers.mainThread;
 public class BookingViewModelImpl implements BookingViewModel {
   private static final int TIME_RETRY = 3;
   private final BookingService bookingService;
+  private UserTokenLoader userTokenLoader;
   private Var<Param> nextBookingForm = Var.create();
   private Var<BookingForm> bookingForm = Var.create();
   private Var<Boolean> isDone = Var.create();
   private Var<Boolean> isFetching = Var.create(false);
   private Param param;
 
-  public BookingViewModelImpl(BookingService bookingService) {
+  public BookingViewModelImpl(BookingService bookingService, UserTokenLoader userTokenLoader) {
     this.bookingService = bookingService;
+    this.userTokenLoader = userTokenLoader;
   }
 
   public static Gson createGson() {
@@ -66,7 +68,8 @@ public class BookingViewModelImpl implements BookingViewModel {
     }
     if (param.getMethod().equals(LinkFormField.METHOD_POST)) {
       this.param = param;
-      return bookingService.postFormAsync(param.getUrl(), param.postBody())
+      return userTokenLoader.getUserToken()
+          .flatMap(token -> bookingService.postFormAsync(param.getUrl(), param.postBody(), token))
           .retry(TIME_RETRY)
           .observeOn(mainThread())
           .doOnNext(new Action1<BookingForm>() {

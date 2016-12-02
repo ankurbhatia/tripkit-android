@@ -19,7 +19,7 @@ public final class BuiltInInterceptor implements Interceptor {
   private static final String HEADER_REGION_ELIGIBILITY = "X-TripGo-RegionEligibility";
   private static final String HEADER_UUID = "X-TripGo-UUID";
   private static final String HEADER_ACCEPT_LANGUAGE = "Accept-Language";
-  private static final String HEADER_USER_TOKEN = "userToken";
+  public static final String HEADER_USER_TOKEN = "userToken";
 
   private final String appVersion;
   private final String regionEligibility;

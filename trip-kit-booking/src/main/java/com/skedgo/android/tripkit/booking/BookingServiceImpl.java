@@ -1,5 +1,6 @@
 package com.skedgo.android.tripkit.booking;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
 
 import com.google.gson.Gson;
@@ -27,9 +28,9 @@ public class BookingServiceImpl implements BookingService {
     return bookingApi.getFormAsync(url).flatMap(handleBookingResponse);
   }
 
-  @Override public Observable<BookingForm> postFormAsync(String url, InputForm inputForm) {
-
-    return bookingApi.postFormAsync(url, inputForm)
+  @Override
+  public Observable<BookingForm> postFormAsync(String url, InputForm inputForm, @NonNull String usertoken) {
+    return bookingApi.postFormAsync(url, inputForm, usertoken)
         .flatMap(handleBookingResponse);
   }
 
