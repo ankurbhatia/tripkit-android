@@ -1,4 +1,5 @@
 apply plugin: "com.android.library"
+apply plugin: 'kotlin-android'
 
 android {
   compileSdkVersion 24
@@ -13,6 +14,9 @@ android {
   lintOptions {
     checkReleaseBuilds true
     abortOnError false
+  }
+  sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
   }
 }
 
@@ -52,4 +56,5 @@ dependencies {
   provided 'org.immutables:value:2.3.9:annotations'
   provided 'org.immutables:builder:2.3.9'
   provided 'org.immutables:gson:2.3.9:annotations'
+  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
