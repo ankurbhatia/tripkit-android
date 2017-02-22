@@ -3,76 +3,59 @@ package com.skedgo.android.tripkit.booking.ui.viewmodel;
 import android.databinding.ObservableBoolean;
 import android.databinding.ObservableField;
 import android.os.Bundle;
-import android.support.annotation.VisibleForTesting;
-import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.skedgo.android.tripkit.booking.ExternalFormField;
+import com.skedgo.android.tripkit.booking.ui.usecase.LoadExternalWeb;
+import com.skedgo.android.tripkit.booking.ui.usecase.LoadHttpURLConnection;
 
 import javax.inject.Inject;
 
 import rx.Observable;
-import rx.subjects.PublishSubject;
 
 public class ExternalViewModel extends DisposableViewModel {
-  private final ObservableBoolean showWebView;
-  private final ObservableField<String> url;
-  private final PublishSubject<String> publishSubjectNextUrl = PublishSubject.create();
-  private ExternalFormField externalFormField;
 
-  @Inject ExternalViewModel() {
-    showWebView = new ObservableBoolean(false);
-    url = new ObservableField<>();
+  private final LoadExternalWeb loadExternalWeb;
+  private final LoadHttpURLConnection loadHttpURLConnection;
+
+  @Inject
+  ExternalViewModel(LoadExternalWeb loadExternalWeb, LoadHttpURLConnection loadHttpURLConnection) {
+    this.loadExternalWeb = loadExternalWeb;
+    this.loadHttpURLConnection = loadHttpURLConnection;
   }
 
   public ObservableBoolean showWebView() {
-    return showWebView;
+    return loadExternalWeb.showWebView;
   }
 
   public ObservableField<String> url() {
-    return url;
+    return loadExternalWeb.url;
   }
 
   public Observable<String> nextUrlObservable() {
-    return publishSubjectNextUrl.asObservable();
-  }
-
-  public void handleArgs(Bundle args) {
-    externalFormField = args.getParcelable("externalFormField");
-    if (externalFormField != null) {
-      url.set(externalFormField.getValue());
-    }
+    return Observable.merge(loadExternalWeb.nextUrlObservable(),
+                            loadHttpURLConnection.nextUrlObservable())
+        .first();
   }
 
   public WebViewClient webViewClient() {
-    return new WebViewClient() {
-      @Override
-      public boolean shouldOverrideUrlLoading(WebView webView, String url) {
-        return handleCallback(url);
-      }
-
-      @Override
-      public void onPageFinished(WebView view, final String url) {
-        if (url.startsWith(externalFormField.getDisregardURL()) &&
-            externalFormField.getValue().startsWith(externalFormField.getDisregardURL())) {
-          publishSubjectNextUrl.onNext(externalFormField.getNextURL());
-        } else {
-          showWebView.set(true);
-        }
-      }
-    };
+    return loadExternalWeb.webViewClient();
   }
 
-  @VisibleForTesting
-  boolean handleCallback(String webUrl) {
-    if (webUrl.startsWith(externalFormField.getDisregardURL())) {
-      publishSubjectNextUrl.onNext(externalFormField.getNextURL());
-      return false;
-    } else {
-      showWebView.set(true);
-      this.url.set(webUrl);
+  public void handleArgs(Bundle args) {
+    ExternalFormField externalFormField = args.getParcelable("externalFormField");
+    if (externalFormField != null && externalFormField.getValue() != null) {
+
+      String url = externalFormField.getValue();
+      String disregardURL = externalFormField.getDisregardURL();
+
+      if (url.startsWith(disregardURL)) {
+        loadHttpURLConnection.loadHttp(externalFormField);
+      } else {
+        loadExternalWeb.setExternalFormFieldAndLoadWeb(externalFormField);
+      }
+
     }
-    return true;
   }
 
 }

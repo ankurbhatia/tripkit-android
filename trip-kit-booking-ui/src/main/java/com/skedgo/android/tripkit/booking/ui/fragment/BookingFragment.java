@@ -287,7 +287,7 @@ public class BookingFragment extends RxFragment implements View.OnClickListener 
         getActivity().setResult(resultCode, done);
         getActivity().finish();
 
-      } else if (data != null && data.getBooleanExtra(EXTRA_RETRY, true)) {
+      } else if (data != null && data.getBooleanExtra(EXTRA_RETRY, false)) {
         String nextUrl = data.getStringExtra(KEY_URL);
         Intent intent = new Intent(getActivity(), getActivity().getClass());
         intent.setAction(ACTION_BOOK);
