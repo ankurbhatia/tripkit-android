@@ -44,15 +44,19 @@ class A2bTripsViewModel constructor(
       }
       .map { it.sortedWith(TripGroupComparators.ARRIVAL_COMPARATOR_CHAIN) }
       .map { it.map { TripViewModel(context, it, onTripSelected) } }
-      .scan(Triple<DiffObservableList<TripViewModel>, List<TripViewModel>?, DiffUtil.DiffResult?>(DiffObservableList(GroupDiffCallback, true), null, null),
+      .scan(Pair<DiffObservableList<TripViewModel>, DiffUtil.DiffResult?>(DiffObservableList(GroupDiffCallback, true), null),
           { previous, next ->
             val new = next.plus(previous.first)
             val diff = previous.first.calculateDiff(new)
             previous.first.update(new, diff)
-            Triple(previous.first, new, diff)
+            Thread.sleep(1000)
+            Pair(previous.first, diff)
           })
       .skip(1)
+      .map { Pair(it.first.toList(), it.second) }
+      .doOnSubscribe { _isRefreshing.onNext(true) }
+      .doOnUnsubscribe { _isRefreshing.onNext(false) }
       .observeOn(mainThread())
-      .doOnNext { items.update(it.second!!, it.third!!) }
+      .doOnNext { items.update(it.first, it.second) }
       .map { Unit }
 }
