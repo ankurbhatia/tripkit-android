@@ -1,6 +1,7 @@
 package skedgo.tripkit.samples.a2brouting
 
 import android.content.Context
+import android.support.v7.util.DiffUtil
 import me.tatarka.bindingcollectionadapter2.ItemBinding
 import me.tatarka.bindingcollectionadapter2.collections.DiffObservableList
 import org.joda.time.DateTime
@@ -22,7 +23,7 @@ class A2bTripsViewModel constructor(
   internal val onTripSelected: PublishSubject<Trip> = PublishSubject.create()
   private val _isRefreshing: BehaviorSubject<Boolean> = BehaviorSubject.create(false)
   val isRefreshing: Observable<Boolean> get() = _isRefreshing.asObservable()
-  val items: DiffObservableList<TripViewModel> = DiffObservableList<TripViewModel>(GroupDiffCallback)
+  val items: DiffObservableList<TripViewModel> = DiffObservableList<TripViewModel>(GroupDiffCallback, true)
   val itemBinding: ItemBinding<TripViewModel> = ItemBinding.of(BR.viewModel, R.layout.trip)
 
   fun showSampleTrips(): Observable<Unit>
@@ -41,15 +42,17 @@ class A2bTripsViewModel constructor(
                 .build()
         )
       }
-      .scan { previous, new -> previous + new }
       .map { it.sortedWith(TripGroupComparators.ARRIVAL_COMPARATOR_CHAIN) }
       .map { it.map { TripViewModel(context, it, onTripSelected) } }
-      .map {
-        Pair(it, items.calculateDiff(it))
-      }
-      .doOnSubscribe { _isRefreshing.onNext(true) }
-      .doOnUnsubscribe { _isRefreshing.onNext(false) }
+      .scan(Triple<DiffObservableList<TripViewModel>, List<TripViewModel>?, DiffUtil.DiffResult?>(DiffObservableList(GroupDiffCallback, true), null, null),
+          { previous, next ->
+            val new = next.plus(previous.first)
+            val diff = previous.first.calculateDiff(new)
+            previous.first.update(new, diff)
+            Triple(previous.first, new, diff)
+          })
+      .skip(1)
       .observeOn(mainThread())
-      .doOnNext { items.update(it.first, it.second) }
+      .doOnNext { items.update(it.second!!, it.third!!) }
       .map { Unit }
 }
