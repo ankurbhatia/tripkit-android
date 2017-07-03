@@ -8,11 +8,15 @@ import android.support.annotation.NonNull;
 import android.util.Pair;
 
 import com.google.gson.Gson;
+
+import rx.Completable;
+import rx.CompletableSubscriber;
 import skedgo.tripkit.routing.Trip;
 import skedgo.tripkit.routing.TripGroup;
 import skedgo.tripkit.routing.TripSegment;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -78,6 +82,15 @@ public class RouteStore {
           }
         })
         .subscribeOn(Schedulers.io());
+  }
+
+  public Completable saveAsync(final TripGroup group) {
+    return Completable.create(new Completable.OnSubscribe() {
+      @Override public void call(CompletableSubscriber s) {
+        saveTripGroupsInTransaction(null, Collections.singletonList(group));
+        s.onCompleted();
+      }
+    });
   }
 
   @DebugLog public Observable<TripGroup> queryAsync(@NonNull Pair<String, String[]> query) {
