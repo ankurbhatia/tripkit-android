@@ -51,7 +51,8 @@ open class BookingActivity : RxAppCompatActivity() {
     }
   }
 
-  @Inject lateinit var viewModel: BookingFormViewModel
+  @Inject
+  lateinit var viewModel: BookingFormViewModel
   val binding: ActivityBookingBinding by lazy {
     DataBindingUtil.setContentView<ActivityBookingBinding>(this, R.layout.activity_booking)
   }
@@ -71,7 +72,7 @@ open class BookingActivity : RxAppCompatActivity() {
     supportActionBar?.setDisplayShowHomeEnabled(true)
     supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-    binding.setViewModel(viewModel)
+    binding.viewModel = viewModel
 
     viewModel.onUpdateFormTitle
         .asObservable()
@@ -105,28 +106,6 @@ open class BookingActivity : RxAppCompatActivity() {
           finishWithRetry(url)
         }, onError)
 
-    viewModel.onNextBookingForm
-        .asObservable()
-        .observeOn(mainThread())
-        .bindToLifecycle(this)
-        .subscribe({ bookingForm ->
-          intent = Intent(this, this.javaClass)
-          intent.putExtra(KEY_TYPE, BOOKING_TYPE_FORM)
-          intent.putExtra(KEY_FORM, bookingForm as Parcelable)
-          startActivityForResult(intent, RQ_BOOKING)
-        }, onError)
-
-    viewModel.onNextBookingFormAction
-        .asObservable()
-        .observeOn(mainThread())
-        .bindToLifecycle(this)
-        .subscribe({ bookingForm ->
-          intent = Intent(this, this.javaClass)
-          intent.putExtra(KEY_TYPE, BOOKING_TYPE_ACTION)
-          intent.putExtra(KEY_FORM, bookingForm as Parcelable)
-          startActivityForResult(intent, RQ_BOOKING)
-        }, onError)
-
     viewModel.onExternalForm
         .asObservable()
         .observeOn(mainThread())
@@ -136,7 +115,7 @@ open class BookingActivity : RxAppCompatActivity() {
           startActivityForResult(intent, RQ_EXTERNAL_WEB)
         }, onError)
 
-    viewModel.fetchBookingFormAsync(intent.extras)
+    viewModel.handleExtras(intent.extras)
         .bindToLifecycle(this)
         .subscribe({}, onError)
 
@@ -205,5 +184,9 @@ open class BookingActivity : RxAppCompatActivity() {
     intent.putExtra(KEY_URL, nextUrl)
     startActivityForResult(intent, RQ_BOOKING)
     finish()
+  }
+
+  override fun onBackPressed() {
+    if(!viewModel.consumeBack()) super.onBackPressed()
   }
 }
