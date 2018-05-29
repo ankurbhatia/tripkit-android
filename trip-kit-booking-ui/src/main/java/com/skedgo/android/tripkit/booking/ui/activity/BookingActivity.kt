@@ -51,6 +51,8 @@ open class BookingActivity : RxAppCompatActivity() {
     }
   }
 
+  // FIXME: injection in derived activity triggers a double view model creation, leading to errors.
+  // Replaces this Activity with a fragment, move the reportProblem logic in the activity
   @Inject
   lateinit var viewModel: BookingFormViewModel
   val binding: ActivityBookingBinding by lazy {
